@@ -13,6 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/blo
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TEMPLATES_AUTO_RELOAD'] = True  # 添加这行来禁用模板缓存
 
+
 # 创建 markdown 过滤器
 @app.template_filter('markdown')
 def render_markdown(text):

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - 管理后台{% endblock %}
+
+{% block content %}
+    <div class="post-form-container">
+        <h1>{{ title }}</h1>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" novalidate
+              action="{{ url_for('new_post') if title == '新建文章' else url_for('edit_post', post_id=post.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.title.label }}
+                {{ form.title(class="form-control") }}
+                {% if form.title.errors %}
+                    <div class="errors">
+                        {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.slug.label }}
+                {{ form.slug(class="form-control") }}
+                {% if form.slug.errors %}
+                    <div class="errors">
+                        {% for error in form.slug.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.category_id.label }}
+                {{ form.category_id(class="form-control") }}
+                {% if form.category_id.errors %}
+                    <div class="errors">
+                        {% for error in form.category_id.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.content.label }}
+                <div class="markdown-editor">
+                    {{ form.content(class="form-control", id="content", rows=15) }}
+                </div>
+                {% if form.content.errors %}
+                    <div class="errors">
+                        {% for error in form.content.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="markdown-tips">
+                    <p>Markdown 语法提示:</p>
+                    <ul>
+                        <li># 一级标题</li>
+                        <li>## 二级标题</li>
+                        <li>**粗体**</li>
+                        <li>*斜体*</li>
+                        <li>[链接文本](URL)</li>
+                        <li>![图片描述](图片URL)</li>
+                        <li>- 无序列表项</li>
+                        <li>1. 有序列表项</li>
+                        <li>```代码块```</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary", id="submit-btn") }}
+                <a href="{{ url_for('admin_dashboard') }}" class="btn">取消</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var textarea = document.getElementById("content");
+            var simplemde = new SimpleMDE({
+                element: textarea,
+                spellChecker: false,
+                autosave: {
+                    enabled: true,
+                    unique_id: "post-content"
+                }
+            });
+
+            document.querySelector('form').addEventListener("submit", function (e) {
+                textarea.value = simplemde.value(); // 同步内容
+                console.log("表单提交，内容已同步");
+                return true; // 不阻止提交
+            });
+        });
+    </script>
+{% endblock %}

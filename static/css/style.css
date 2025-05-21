@@ -1,0 +1,536 @@
+/* 基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+/* 头部样式 */
+header {
+    margin-bottom: 30px;
+}
+
+.profile {
+    display: flex;
+    flex-direction: row;  /* 改为水平排列 */
+    align-items: center;  /* 垂直居中对齐 */
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 10%;
+    margin-right: 15px;  /* 右侧添加间距 */
+    margin-bottom: 0;    /* 移除底部间距 */
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile h1 {
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+.profile p {
+    color: #666;
+    font-size: 14px;
+}
+
+/* 导航样式 */
+nav ul {
+    display: flex;
+    list-style: none;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+nav li {
+    margin-right: 20px;
+    margin-bottom: 5px;
+}
+
+nav a {
+    color: #555;
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #000;
+}
+
+/* 文章列表样式 */
+.article-section h1 {
+    margin-bottom: 20px;
+}
+
+.search-box {
+    margin-bottom: 30px;
+    width: 25%;
+}
+
+.search-box form {
+    display: flex;
+    align-items: center;  /* 添加垂直居中对齐 */
+    gap: 10px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 14px;
+    
+}
+
+.search-box button {
+    padding: 6px 12px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+   
+    white-space: nowrap;
+}
+
+.year-section {
+    margin-bottom: 25px;
+}
+
+.year-section h2 {
+    font-size: 16px;
+    font-weight: normal;  /* 移除加粗 */
+    margin-bottom: 8px;
+}
+
+/* 文章列表样式 */
+/* 使用伪元素添加小圆点 */
+.post-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.post-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: baseline;
+}
+
+.post-list li::before {
+    content: "★";  /* 使用圆点字符 */
+    position: absolute;
+    left: 5px;
+    color: #333;
+}
+
+.post-date {
+    color: #666;
+    margin-right: 8px;
+    min-width: 40px;
+    font-size: 14px;
+}
+
+
+.post-list li a {
+    font-size: 16px;
+}
+
+.post-list li {
+    margin-bottom: 2px;
+    display: flex;
+    align-items: flex-start;
+    font-size: 14px;
+}
+
+
+/* 文章页面样式 */
+.article-container {
+    line-height: 1.8;
+}
+
+.article-container h1 {
+    margin-bottom: 10px;
+}
+
+.article-meta {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.article-content {
+    margin-top: 20px;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    nav ul {
+        flex-direction: column;
+    }
+    
+    nav li {
+        margin-bottom: 8px;
+    }
+    
+    .search-box input {
+        width: 60%;
+    }
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.errors span {
+    color: #d9534f;
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    color: #333;
+}
+
+.btn-primary {
+    background: #0366d6;
+    border-color: #0366d6;
+    color: #fff;
+}
+
+.btn-danger {
+    background: #d9534f;
+    border-color: #d9534f;
+    color: #fff;
+}
+
+.form-actions {
+    margin-top: 20px;
+}
+
+/* Markdown编辑器样式 */
+.markdown-editor textarea {
+    min-height: 300px;
+    font-family: monospace;
+}
+
+.markdown-tips {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.markdown-tips ul {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+/* 文章内容Markdown样式 */
+.article-content {
+    line-height: 1.6;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+    margin: 1.5em 0 0.5em;
+    font-weight: 500;
+}
+
+.article-content h1 {
+    font-size: 24px;
+}
+
+.article-content h2 {
+    font-size: 20px;
+}
+
+.article-content h3 {
+    font-size: 18px;
+}
+
+.article-content p {
+    margin: 1em 0;
+}
+
+.article-content ul,
+.article-content ol {
+    padding-left: 20px;
+    margin: 1em 0;
+}
+
+.article-content blockquote {
+    border-left: 4px solid #eee;
+    padding-left: 15px;
+    color: #666;
+    margin: 1em 0;
+}
+
+.article-content code {
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.article-content pre {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+.article-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.article-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 仪表盘表格样式 */
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.dashboard-table th {
+    font-weight: 500;
+}
+
+.dashboard-actions {
+    margin-bottom: 20px;
+}
+
+.dashboard-actions .btn {
+    margin-right: 10px;
+}
+
+.text-danger {
+    color: #d9534f;
+}
+
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash-message {
+    padding: 10px;
+    background: #dff0d8;
+    border: 1px solid #d6e9c6;
+    border-radius: 3px;
+    color: #3c763d;
+    margin-bottom: 10px;
+}
+
+.footer {
+    padding-top: 20px;
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+}
+
+.footer-content {
+    text-align: center;
+}
+
+.copyright-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.copyright-text p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9em;  /* 设置与admin-link相同的字号 */
+}
+
+.admin-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s ease;
+    line-height: 1.5;  /* 添加行高确保垂直对齐 */
+}
+
+.admin-link:hover {
+    color: #333;
+    text-decoration: underline;
+}
+
+.action-link {
+    text-decoration: none;
+    font-size: 16px;
+    color: #0366d6;
+    cursor: pointer;
+}
+
+.action-link.text-danger {
+    color: #d9534f;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+
+
+/* 关于页面样式 */
+.about-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.about-header {
+    margin-bottom: 40px;
+}
+
+.about-header h1 {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 16px;
+}
+
+.about-section {
+    margin-bottom: 30px;
+}
+
+.about-section h2 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.activity-list,
+.social-list,
+.other-sites {
+    list-style: none;
+    padding: 0;
+}
+
+.activity-list li,
+.social-list li,
+.other-sites li {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.goals-progress {
+    margin-top: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background-color: #0366d6;
+    transition: width 0.3s ease;
+}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑首页 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="edit-index-container">
+    <h1>编辑首页内容</h1>
+    
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    
+    <form method="post">
+        <div class="form-group">
+            <label for="content">HTML 内容</label>
+            <textarea id="content" name="content" class="form-control code-editor" rows="30">{{ content }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存更改</button>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn">取消</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.code-editor {
+    font-family: monospace;
+    white-space: pre;
+    tab-size: 4;
+}
+</style>
+{% endblock %}

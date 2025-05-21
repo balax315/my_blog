@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - 个人博客{% endblock %}
+
+{% block content %}
+<div class="category-container">
+    <h1>分类：{{ category.name }}</h1>
+    
+    <div class="article-list">
+        {% if posts_by_year %}
+            {% for year in years %}
+            <div class="year-section">
+                <h2>{{ year }} ({{ posts_by_year[year]|length }})</h2>
+                <ul class="post-list">
+                    {% for post in posts_by_year[year] %}
+                    <li>
+                        <span class="post-date">{{ post.created_at.strftime('%m/%d') }}</span>
+                        <a href="{{ url_for('article', slug=post.slug) }}">{{ post.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-posts">该分类下暂无文章</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

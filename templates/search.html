@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}搜索: {{ query }} - 个人博客{% endblock %}
+
+{% block content %}
+<div class="search-results">
+    <h1>搜索结果: {{ query }}</h1>
+    
+    {% if posts %}
+    <ul class="post-list">
+        {% for post in posts %}
+        <li>
+            <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+            <a href="{{ url_for('article', slug=post.slug) }}">{{ post.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>没有找到匹配的结果。</p>
+    {% endif %}
+</div>
+{% endblock %}

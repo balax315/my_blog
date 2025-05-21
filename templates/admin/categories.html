@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}分类管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="categories-container">
+    <h1>分类管理</h1>
+    
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    
+    <div class="categories-actions">
+        <a href="{{ url_for('new_category') }}" class="btn btn-primary">添加分类</a>
+    </div>
+    
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>别名</th>
+                <th>文章数</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td> <a href="{{ url_for('category', slug=category.slug) }}">{{ category.name }} </a></td>
+                <td>{{ category.slug }}</td>
+                <td>{{ category.posts|length }}</td>
+                <td>
+                    <a href="{{ url_for('edit_category', category_id=category.id) }}" class="action-link">编辑</a> |
+                    <form action="{{ url_for('delete_category', category_id=category.id) }}" method="post" style="display: inline;">
+                        <a href="#" class="action-link text-danger" onclick="if(confirm('确定要删除这个分类吗？')) this.parentNode.submit(); return false;">删除</a>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

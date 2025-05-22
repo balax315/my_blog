@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/blog_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['TEMPLATES_AUTO_RELOAD'] = True  # 添加这行来禁用模板缓存
+app.config['TEMPLATES_AUTO_RELOAD'] = True   # 添加这行来禁用模板缓存
 
 
 # 创建 markdown 过滤器
@@ -212,7 +212,7 @@ def edit_post(post_id):
         flash('文章已更新')
         return redirect(url_for('admin_dashboard'))
     
-    return render_template('admin/post_form.html', form=form, title='编辑文章')
+    return render_template('admin/post_form.html', form=form, title='编辑文章', post=post)  # 添加 post=post
 
 @app.route('/admin/categories')
 @login_required

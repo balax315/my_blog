@@ -1,8 +1,9 @@
 import os
 
 class Config:
-    SECRET_KEY = 'your-secret-key'
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root@localhost/blog_db'
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL',
+        'mysql+pymysql://root:root@localhost/blog_db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TEMPLATES_AUTO_RELOAD = True
 

@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
 from . import auth_bp
 from models import User
-from forms.auth import LoginForm
+from forms import LoginForm  # 改为从forms包直接导入
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():

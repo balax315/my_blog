@@ -17,6 +17,7 @@
     {% endwith %}
     
     <form method="post">
+        {{ form.csrf_token }}
         <div class="form-group">
             <label for="username">用户名</label>
             <input type="text" id="username" name="username" required>

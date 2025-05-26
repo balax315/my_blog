@@ -13,7 +13,8 @@ from models import db, login_manager
 from routes import register_blueprints
 
 def create_app(config_name='default'):
-    app = Flask(__name__)
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    app = Flask(__name__, template_folder=os.path.join(base_dir, 'templates'))
     app.config.from_object(config[config_name])
     
     # 初始化扩展

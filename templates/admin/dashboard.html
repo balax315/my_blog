@@ -17,10 +17,11 @@
     {% endwith %}
     
     <div class="dashboard-actions">
-        <a href="{{ url_for('new_post') }}" class="btn">添加文章</a>
-        <a href="{{ url_for('admin_categories') }}" class="btn">管理分类</a>
-        <a href="{{ url_for('edit_index') }}" class="btn">编辑首页</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">退出登录</a>
+        <a href="{{ url_for('admin.new_post') }}" class="btn">添加文章</a>
+        <a href="{{ url_for('admin.admin_categories') }}" class="btn">管理分类</a>
+        <a href="{{ url_for('admin.edit_index') }}" class="btn">编辑首页</a>
+        <a href="{{ url_for('sleep.new_sleep_record') }}" class="btn">添加睡眠记录</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">退出登录</a>
     </div>
     
     <div class="dashboard-section">
@@ -41,9 +42,12 @@
                     <td>{{ post.category.name if post.category else '无分类' }}</td>
                     <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
                     <td>
-                        <a href="{{ url_for('edit_post', post_id=post.id) }}">编辑</a> | 
-                        <a href="{{ url_for('article', slug=post.slug) }}" target="_blank">查看</a> | 
-                        <a href="#" class="text-danger" onclick="return confirm('确定要删除这篇文章吗？')">删除</a>
+                        <a href="{{ url_for('admin.edit_post', post_id=post.id) }}">编辑</a> |
+                        <a href="{{ url_for('main.article', slug=post.slug) }}" target="_blank">查看</a> |
+                        <form action="{{ url_for('admin.delete_post', post_id=post.id) }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <a href="#" class="text-danger" onclick="if(confirm('确定要删除这篇文章吗？')) { this.parentNode.submit(); } return false;">删除</a>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}

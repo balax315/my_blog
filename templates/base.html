@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ url_for('static', filename='images/avatar.jpg') }}" type="image/jpeg">
     <title>{% block title %}LEO / 一个 Web 开发者和写作爱好者的在线记事本{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -21,9 +22,9 @@
             
             <nav>
                 <ul>
-                    <li><a href="{{ url_for('index') }}">主页</a></li>
-                    <li><a href="{{ url_for('articles') }}">文章</a></li>
-                    <li><a href="#">演讲</a></li>
+                    <li><a href="{{ url_for('main.index') }}">主页</a></li>
+                    <li><a href="{{ url_for('main.articles') }}">文章</a></li>
+                    <li><a href="{{ url_for('sleep.sleep_calendar') }}">睡眠日历</a></li>
                     <li><a href="#">活动</a></li>
                     <li><a href="#">读书</a></li>
                     <li><a href="#">程序</a></li>
@@ -43,7 +44,7 @@
                 <div class="copyright-text">
                     <p>&copy; {{ now.year }} 个人博客. All rights reserved.</p>
                     {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('admin_dashboard') }}" class="admin-link">管理后台</a>
+                        <a href="{{ url_for('admin.dashboard') }}" class="admin-link">管理后台</a>
                     {% endif %}
                 </div>
             </div>

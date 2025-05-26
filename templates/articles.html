@@ -7,7 +7,7 @@
     <h1>文章</h1>
     
     <div class="search-box">
-        <form action="{{ url_for('search') }}" method="get">
+        <form action="{{ url_for('main.search') }}" method="get">
             <input type="text" name="q" placeholder="搜索...">
             <button type="submit">搜索</button>
         </form>
@@ -20,7 +20,7 @@
             {% for post in posts_by_year[year] %}
             <li>
                 <span class="post-date">{{ post.created_at.strftime('%m/%d') }}</span>
-                <a href="{{ url_for('article', slug=post.slug) }}">{{ post.title }}</a>
+                <a href="{{ url_for('main.article', slug=post.slug) }}">{{ post.title }}</a>
             </li>
             {% endfor %}
         </ul>

@@ -17,7 +17,7 @@
     {% endwith %}
     
     <div class="categories-actions">
-        <a href="{{ url_for('new_category') }}" class="btn btn-primary">添加分类</a>
+        <a href="{{ url_for('category.new_category') }}" class="btn btn-primary">添加分类</a>
     </div>
     
     <table class="dashboard-table">
@@ -32,12 +32,12 @@
         <tbody>
             {% for category in categories %}
             <tr>
-                <td> <a href="{{ url_for('category', slug=category.slug) }}">{{ category.name }} </a></td>
+                <td> <a href="{{ url_for('main.category', slug=category.slug) }}">{{ category.name }} </a></td>
                 <td>{{ category.slug }}</td>
                 <td>{{ category.posts|length }}</td>
                 <td>
-                    <a href="{{ url_for('edit_category', category_id=category.id) }}" class="action-link">编辑</a> |
-                    <form action="{{ url_for('delete_category', category_id=category.id) }}" method="post" style="display: inline;">
+                    <a href="{{ url_for('category.edit_category', category_id=category.id) }}" class="action-link">编辑</a> |
+                    <form action="{{ url_for('category.delete_category', category_id=category.id) }}" method="post" style="display: inline;">
                         <a href="#" class="action-link text-danger" onclick="if(confirm('确定要删除这个分类吗？')) this.parentNode.submit(); return false;">删除</a>
                     </form>
                 </td>

@@ -17,6 +17,7 @@
     {% endwith %}
     
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="name">分类名称</label>
             <input type="text" id="name" name="name" class="form-control" value="{{ category.name if category else '' }}" required>
@@ -29,7 +30,7 @@
         
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">保存</button>
-            <a href="{{ url_for('admin_categories') }}" class="btn">取消</a>
+            <a href="{{ url_for('admin.admin_categories') }}" class="btn">取消</a>
         </div>
     </form>
 </div>

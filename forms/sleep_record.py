@@ -3,13 +3,6 @@ from wtforms import StringField, TextAreaField, SelectField, SubmitField, TimeFi
 from wtforms.validators import DataRequired, Length
 from wtforms.fields import DateField
 
-class PostForm(FlaskForm):
-    title = StringField('标题', validators=[DataRequired(), Length(max=200)])
-    slug = StringField('URL别名', validators=[DataRequired(), Length(max=200)])
-    category_id = SelectField('分类', coerce=int)
-    content = TextAreaField('内容')  # 不加 validators=[DataRequired()]
-    submit = SubmitField('保存')
-
 class SleepRecordForm(FlaskForm):
     date = DateField('日期', validators=[DataRequired()])
     sleep_time = TimeField('入睡时间', validators=[DataRequired()])

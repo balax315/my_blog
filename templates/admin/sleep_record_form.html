@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - 个人博客{% endblock %}
+
+{% block styles %}
+<style>
+    .time-select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>{{ title }}</h1>
+    
+    <form method="post">
+        {{ form.csrf_token }}
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ form.date.label }}
+            {{ form.date(class="form-control") }}
+            {% if form.date.errors %}
+                <div class="error">{{ form.date.errors[0] }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.sleep_time.label }}
+            {{ form.sleep_time(class="time-select") }}
+            {% if form.sleep_time.errors %}
+                <div class="error">{{ form.sleep_time.errors[0] }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.wake_time.label }}
+            {{ form.wake_time(class="time-select") }}
+            {% if form.wake_time.errors %}
+                <div class="error">{{ form.wake_time.errors[0] }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.quality.label }}
+            {{ form.quality(class="form-control") }}
+            {% if form.quality.errors %}
+                <div class="error">{{ form.quality.errors[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.notes.label }}
+            {{ form.notes(class="form-control", rows=5) }}
+            {% if form.notes.errors %}
+                <div class="error">{{ form.notes.errors[0] }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.submit(class="btn") }}
+            <a href="{{ url_for('sleep.sleep_calendar') }}" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

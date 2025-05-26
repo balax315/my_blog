@@ -1,4 +1,5 @@
-from app import app, db, User, Category, Post
+from app import app
+from models import db, User, Category, Post
 import datetime
 
 # 在应用上下文中创建表

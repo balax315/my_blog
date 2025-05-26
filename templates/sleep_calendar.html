@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+
+{% block title %}睡眠日历 - 个人博客{% endblock %}
+
+{% block styles %}
+    <style>
+        .calendar-container {
+            margin-top: 20px;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .month {
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .month-header {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .day {
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .day:hover {
+            background-color: #f5f5f5;
+        }
+
+        .day.empty {
+            background: none;
+            cursor: default;
+        }
+
+        .day.today {
+            font-weight: bold;
+            border: 1px solid #0366d6;
+        }
+
+        .day.has-record {
+            color: white;
+        }
+
+        .day.quality-good {
+            background-color: #4CAF50;
+        }
+
+        .day.quality-normal {
+            background-color: #FFC107;
+        }
+
+        .day.quality-poor {
+            background-color: #F44336;
+        }
+
+        .record-form {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            background-color: #0366d6;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .record-details {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .quality-legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="articles-container">
+        <h1>睡眠日历 (2025)</h1>
+
+        <div class="quality-legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4CAF50;"></div>
+                <span>优</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FFC107;"></div>
+                <span>良</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #F44336;"></div>
+                <span>差</span>
+            </div>
+        </div>
+
+        <div class="calendar-container">
+            <div class="month-grid" id="calendar"></div>
+        </div>
+
+        {% if current_user.is_authenticated %}
+            <div class="record-form" id="recordForm" style="display: none;">
+                <h2>添加/编辑睡眠记录</h2>
+                <form id="sleepRecordForm">
+                    <input type="hidden" id="recordId">
+                    <div class="form-group">
+                        <label for="date">日期</label>
+                        <input type="date" id="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sleepTime">入睡时间</label>
+                        <input type="datetime-local" id="sleepTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="wakeTime">起床时间</label>
+                        <input type="datetime-local" id="wakeTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quality">睡眠质量</label>
+                        <select id="quality" class="form-control" required>
+                            <option value="good">优</option>
+                            <option value="normal">良</option>
+                            <option value="poor">差</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">备注</label>
+                        <textarea id="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn">保存</button>
+                    <button type="button" class="btn" style="background-color: #ccc;" onclick="hideForm()">取消</button>
+                    <button type="button" class="btn" style="background-color: #F44336; display: none;" id="deleteBtn">
+                        删除
+                    </button>
+                </form>
+            </div>
+
+            <div class="record-details" id="recordDetails" style="display: none;">
+                <h2>睡眠记录详情</h2>
+                <div id="detailsContent"></div>
+                <button class="btn" onclick="editRecord()">编辑</button>
+                <button class="btn" style="background-color: #ccc;" onclick="hideDetails()">关闭</button>
+            </div>
+        {% else %}
+            <p>请<a href="{{ url_for('auth.login') }}">登录</a>后添加睡眠记录。</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // 月份名称
+        const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+        // 星期名称
+        const weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
+        // 睡眠记录数据
+        let sleepRecords = [];
+        // 当前选中的记录
+        let selectedRecord = null;
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取睡眠记录数据
+            fetchSleepRecords();
+
+            // 初始化日历
+            initCalendar();
+
+            // 表单提交事件
+            document.getElementById('sleepRecordForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                saveSleepRecord();
+            });
+
+            // 删除按钮点击事件
+            document.getElementById('deleteBtn').addEventListener('click', function () {
+                if (confirm('确定要删除这条记录吗？')) {
+                    deleteSleepRecord();
+                }
+            });
+        });
+        // 获取CSRF令牌
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // 获取睡眠记录数据
+        function fetchSleepRecords() {
+            fetch('/api/sleep-records?year=2025', {
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    sleepRecords = data;
+                    updateCalendar();
+                })
+                .catch(error => console.error('获取睡眠记录失败:', error));
+        }
+
+        // 初始化日历
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+
+            // 生成12个月的日历
+            for (let month = 0; month < 12; month++) {
+                const monthEl = document.createElement('div');
+                monthEl.className = 'month';
+
+                // 月份标题
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'month-header';
+                monthHeader.textContent = monthNames[month];
+                monthEl.appendChild(monthHeader);
+
+                // 星期标题
+                const weekdaysEl = document.createElement('div');
+                weekdaysEl.className = 'weekdays';
+                for (let i = 0; i < 7; i++) {
+                    const weekdayEl = document.createElement('div');
+                    weekdayEl.textContent = weekdayNames[i];
+                    weekdaysEl.appendChild(weekdayEl);
+                }
+                monthEl.appendChild(weekdaysEl);
+
+                // 日期格子
+                const daysEl = document.createElement('div');
+                daysEl.className = 'days';
+                daysEl.id = `days-${month}`;
+                monthEl.appendChild(daysEl);
+
+                calendarEl.appendChild(monthEl);
+            }
+
+            // 填充日期
+            updateCalendar();
+        }
+
+        // 更新日历
+        function updateCalendar() {
+            const year = 2025;
+
+            for (let month = 0; month < 12; month++) {
+                const daysEl = document.getElementById(`days-${month}`);
+                daysEl.innerHTML = '';
+
+                // 获取月份的第一天是星期几
+                const firstDay = new Date(year, month, 1).getDay();
+
+                // 获取月份的天数
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // 添加空白格子
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.className = 'day empty';
+                    daysEl.appendChild(emptyEl);
+                }
+
+                // 添加日期格子
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'day';
+                    dayEl.textContent = day;
+
+                    // 检查是否有睡眠记录
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const record = sleepRecords.find(r => r.date === dateStr);
+
+                    if (record) {
+                        dayEl.classList.add('has-record');
+                        dayEl.classList.add(`quality-${record.quality}`);
+                        dayEl.setAttribute('data-record-id', record.id);
+
+                        // 点击查看详情
+                        dayEl.addEventListener('click', function () {
+                            showRecordDetails(record);
+                        });
+                    } else {
+                        // 点击添加记录
+                        dayEl.addEventListener('click', function () {
+                            showAddForm(dateStr);
+                        });
+                    }
+
+                    daysEl.appendChild(dayEl);
+                }
+            }
+        }
+
+        // 显示添加记录表单
+        function showAddForm(dateStr) {
+            hideDetails();
+            selectedRecord = null;
+
+            const form = document.getElementById('recordForm');
+            form.style.display = 'block';
+
+            document.getElementById('recordId').value = '';
+            document.getElementById('date').value = dateStr;
+            document.getElementById('sleepTime').value = `${dateStr}T22:00`;
+            document.getElementById('wakeTime').value = `${dateStr}T07:00`;
+            document.getElementById('quality').value = 'normal';
+            document.getElementById('notes').value = '';
+
+            document.getElementById('deleteBtn').style.display = 'none';
+        }
+
+        // 显示记录详情
+        function showRecordDetails(record) {
+            hideForm();
+            selectedRecord = record;
+
+            const details = document.getElementById('recordDetails');
+            details.style.display = 'block';
+
+            const content = document.getElementById('detailsContent');
+            content.innerHTML = `
+            <p><strong>日期:</strong> ${record.date}</p>
+            <p><strong>入睡时间:</strong> ${record.sleep_time}</p>
+            <p><strong>起床时间:</strong> ${record.wake_time}</p>
+            <p><strong>睡眠时长:</strong> ${record.duration} 小时</p>
+            <p><strong>睡眠质量:</strong> ${getQualityText(record.quality)}</p>
+            ${record.notes ? `<p><strong>备注:</strong> ${record.notes}</p>` : ''}
+        `;
+        }
+
+        // 编辑记录
+        function editRecord() {
+            if (!selectedRecord) return;
+
+            hideDetails();
+
+            const form = document.getElementById('recordForm');
+            form.style.display = 'block';
+
+            document.getElementById('recordId').value = selectedRecord.id;
+            document.getElementById('date').value = selectedRecord.date;
+
+            // 格式化时间
+            const sleepDateTime = `${selectedRecord.date}T${selectedRecord.sleep_time}`;
+            const wakeDateTime = `${selectedRecord.date}T${selectedRecord.wake_time}`;
+
+            document.getElementById('sleepTime').value = sleepDateTime;
+            document.getElementById('wakeTime').value = wakeDateTime;
+            document.getElementById('quality').value = selectedRecord.quality;
+            document.getElementById('notes').value = selectedRecord.notes || '';
+
+            document.getElementById('deleteBtn').style.display = 'inline-block';
+        }
+
+        // 保存睡眠记录
+        function saveSleepRecord() {
+            const recordId = document.getElementById('recordId').value;
+            const date = document.getElementById('date').value;
+            const sleepTimeInput = document.getElementById('sleepTime').value;
+            const wakeTimeInput = document.getElementById('wakeTime').value;
+            const quality = document.getElementById('quality').value;
+            const notes = document.getElementById('notes').value;
+        
+            // 分离日期和时间
+            const sleepTime = sleepTimeInput.split('T')[1];
+            const wakeTime = wakeTimeInput.split('T')[1];
+        
+            const url = recordId ?
+                `/admin/sleep-record/${recordId}/edit` :
+                '/admin/sleep-record/new';
+        
+            // 创建表单数据
+            const formData = new FormData();
+        
+            // 添加CSRF令牌
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            formData.append('csrf_token', csrfToken);
+        
+            // 添加表单字段
+            formData.append('date', date);
+            formData.append('sleep_time', sleepTime);
+            formData.append('wake_time', wakeTime);
+            formData.append('quality', quality);
+            formData.append('notes', notes);
+            formData.append('submit', '保存'); // 添加submit字段
+        
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.text();
+                    }
+                })
+                .then(html => {
+                    if (html) {
+                        // 处理错误
+                        console.error('保存失败');
+                        console.log(html); // 输出错误信息以便调试
+                    }
+                })
+                .catch(error => console.error('保存失败:', error));
+        }
+        
+        // 删除睡眠记录
+        function deleteSleepRecord() {
+            if (!selectedRecord) return;
+        
+            const recordId = selectedRecord.id;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            const formData = new FormData();
+            formData.append('csrf_token', csrfToken);
+        
+            fetch(`/admin/sleep-record/${recordId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.text();
+                    }
+                })
+                .then(html => {
+                    if (html) {
+                        // 处理错误
+                        console.error('删除失败');
+                        console.log(html); // 输出错误信息以便调试
+                    }
+                })
+                .catch(error => console.error('删除失败:', error));
+        }
+
+        // 隐藏表单
+        function hideForm() {
+            document.getElementById('recordForm').style.display = 'none';
+        }
+
+        // 隐藏详情
+        function hideDetails() {
+            document.getElementById('recordDetails').style.display = 'none';
+        }
+
+        // 获取质量文本
+        function getQualityText(quality) {
+            switch (quality) {
+                case 'good':
+                    return '优';
+                case 'normal':
+                    return '良';
+                case 'poor':
+                    return '差';
+                default:
+                    return '';
+            }
+        }
+    </script>
+{% endblock %}

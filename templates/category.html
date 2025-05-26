@@ -15,7 +15,7 @@
                     {% for post in posts_by_year[year] %}
                     <li>
                         <span class="post-date">{{ post.created_at.strftime('%m/%d') }}</span>
-                        <a href="{{ url_for('article', slug=post.slug) }}">{{ post.title }}</a>
+                        <a href="{{ url_for('main.article', slug=post.slug) }}">{{ post.title }}</a>
                     </li>
                     {% endfor %}
                 </ul>

@@ -387,7 +387,7 @@
             <p><strong>起床时间:</strong> ${record.wake_time}</p>
             <p><strong>睡眠时长:</strong> ${record.duration} 小时</p>
             <p><strong>睡眠质量:</strong> ${getQualityText(record.quality)}</p>
-            ${record.notes ? `<p><strong>备注:</strong> ${record.notes}</p>` : ''}
+            ${record.notes ? `<p><strong>备注:</strong> ${record.notes.replace(/\n/g, '<br>')}</p>` : ''}
         `;
         }
 

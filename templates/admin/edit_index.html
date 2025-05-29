@@ -17,6 +17,7 @@
     {% endwith %}
     
     <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="content">HTML 内容</label>
             <textarea id="content" name="content" class="form-control code-editor" rows="30">{{ content }}</textarea>

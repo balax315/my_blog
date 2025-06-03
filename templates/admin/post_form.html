@@ -16,8 +16,10 @@
             {% endif %}
         {% endwith %}
 
-        <form method="post" novalidate
+        <form method="post" enctype="multipart/form-data" novalidate
               action="{{ url_for('admin.new_post') if title == '新建文章' else url_for('admin.edit_post', post_id=post.id) }}">
+            <!-- 注意：添加 enctype="multipart/form-data" 以支持文件上传 -->
+            
             {{ form.hidden_tag() }}
 
             <div class="form-group">
@@ -53,6 +55,22 @@
                             <span>{{ error }}</span>
                         {% endfor %}
                     </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.image.label }}
+                {{ form.image(class="form-control") }}
+                {% if form.image.errors %}
+                    <div class="errors">
+                        {% for error in form.image.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if post and post.image_filename %}
+                    <p>当前图片: {{ post.image_filename }}</p>
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" alt="特色图片" style="max-width: 200px;">
                 {% endif %}
             </div>
 
@@ -99,22 +117,63 @@
 {% block scripts %}
     <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var textarea = document.getElementById("content");
-            var simplemde = new SimpleMDE({
-                element: textarea,
-                spellChecker: false,
-                autosave: {
-                    enabled: true,
-                    unique_id: "post-content"
-                }
-            });
-
-            document.querySelector('form').addEventListener("submit", function (e) {
-                textarea.value = simplemde.value(); // 同步内容
-                console.log("表单提交，内容已同步");
-                return true; // 不阻止提交
-            });
+        var simplemde = new SimpleMDE({
+            element: document.getElementById("content"),
+            spellChecker: false,
+            autosave: {
+                enabled: true,
+                delay: 1000,
+                uniqueId: "post-content"
+            },
+            toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", {
+                name: "image",
+                action: function customFunction(editor){
+                    // 创建文件输入元素
+                    var fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/*';
+                    fileInput.style.display = 'none';
+                    document.body.appendChild(fileInput);
+                    
+                    // 监听文件选择
+                    fileInput.addEventListener('change', function() {
+                        if (fileInput.files && fileInput.files[0]) {
+                            var formData = new FormData();
+                            formData.append('image', fileInput.files[0]);
+                            
+                            // 发送到服务器
+                            fetch('{{ url_for("admin.upload_image") }}', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token() }}'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.url) {
+                                    // 插入Markdown图片语法
+                                    var cm = editor.codemirror;
+                                    var output = '![图片](' + data.url + ')';
+                                    cm.replaceSelection(output);
+                                } else {
+                                    alert('上传失败: ' + (data.error || '未知错误'));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('上传失败，请重试');
+                            });
+                        }
+                        document.body.removeChild(fileInput);
+                    });
+                    
+                    // 触发文件选择对话框
+                    fileInput.click();
+                },
+                className: "fa fa-picture-o",
+                title: "上传图片",
+            }, "|", "code", "table", "|", "preview", "side-by-side", "fullscreen"],
         });
     </script>
 {% endblock %}

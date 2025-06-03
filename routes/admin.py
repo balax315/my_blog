@@ -1,10 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash, current_app
+from flask import render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required
 import os
 from . import admin_bp
 from models import db, Post, Category
 from forms import PostForm, IndexContentForm
 import markdown2
+from werkzeug.utils import secure_filename
+import uuid
 
 @admin_bp.route('/')
 @login_required
@@ -33,6 +35,12 @@ def new_post():
                     content=form.content.data,
                     category_id=form.category_id.data
                 )
+                
+                # 处理图片上传
+                if form.image.data:
+                    image_filename = save_image(form.image.data)
+                    post.image_filename = image_filename
+                
                 db.session.add(post)
                 try:
                     db.session.commit()
@@ -59,11 +67,41 @@ def edit_post(post_id):
         post.slug = form.slug.data
         post.content = form.content.data
         post.category_id = form.category_id.data
+        
+        # 处理图片上传
+        if form.image.data:
+            # 如果有旧图片，删除它
+            if post.image_filename:
+                try:
+                    old_image_path = os.path.join(current_app.root_path, 'static', 'uploads', post.image_filename)
+                    if os.path.exists(old_image_path):
+                        os.remove(old_image_path)
+                except Exception as e:
+                    print(f"删除旧图片失败: {str(e)}")
+            
+            # 保存新图片
+            image_filename = save_image(form.image.data)
+            post.image_filename = image_filename
+        
         db.session.commit()
         flash('文章已更新')
         return redirect(url_for('admin.dashboard'))
     
     return render_template('admin/post_form.html', form=form, title='编辑文章', post=post)
+
+# 辅助函数：保存上传的图片
+def save_image(image_file):
+    # 生成安全的文件名
+    filename = secure_filename(image_file.filename)
+    # 添加唯一标识符，避免文件名冲突
+    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+    # 保存路径
+    upload_path = os.path.join(current_app.root_path, 'static', 'uploads')
+    # 确保目录存在
+    os.makedirs(upload_path, exist_ok=True)
+    # 保存文件
+    image_file.save(os.path.join(upload_path, unique_filename))
+    return unique_filename
 
 @admin_bp.route('/categories')
 @login_required
@@ -148,3 +186,25 @@ def delete_post(post_id):
         db.session.rollback()
         flash(f'删除失败: {str(e)}')
     return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/upload-image', methods=['POST'])
+@login_required
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({'error': '没有文件'}), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = save_image(file)
+        image_url = url_for('static', filename=f'uploads/{filename}')
+        return jsonify({'url': image_url})
+    
+    return jsonify({'error': '不支持的文件类型'}), 400
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}

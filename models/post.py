@@ -7,5 +7,6 @@ class Post(db.Model):
     title = db.Column(db.String(200), nullable=False)
     slug = db.Column(db.String(200), unique=True, nullable=False)
     content = db.Column(db.Text)
+    image_filename = db.Column(db.String(100))  # 存储图片文件名
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))

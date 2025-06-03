@@ -11,6 +11,7 @@ from sqlalchemy.sql.expression import extract
 from config import config
 from models import db, login_manager
 from routes import register_blueprints
+from flask_migrate import Migrate
 
 def create_app(config_name='default'):
     base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -50,6 +51,8 @@ def create_app(config_name='default'):
     return app
 
 app = create_app()
+
+migrate = Migrate(app, db)
 
 if __name__ == '__main__':
     app.run(debug=True)

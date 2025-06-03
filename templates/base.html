@@ -7,6 +7,8 @@
     <link rel="icon" href="{{ url_for('static', filename='images/avatar.jpg') }}" type="image/jpeg">
     <title>{% block title %}LEO / 一个 Web 开发者和写作爱好者的在线记事本{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/markdown.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pygments.css') }}">
     {% block styles %}{% endblock %}
 </head>
 <body>

@@ -25,7 +25,19 @@ def create_app(config_name='default'):
     # 创建 markdown 过滤器
     @app.template_filter('markdown')
     def render_markdown(text):
-        return markdown2.markdown(text)
+        return markdown2.markdown(
+            text,
+            extras=[
+                "fenced-code-blocks",
+                "tables",
+                "header-ids",
+                "task_list",
+                "footnotes",
+                "cuddled-lists",
+                "code-friendly",
+                "smarty-pants"
+            ]
+        )
     
     # 注册上下文处理器
     @app.context_processor

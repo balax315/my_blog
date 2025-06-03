@@ -1,59 +1,43 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}{% block content %}<div class="markdown-content"><h1 id="leo">Leo</h1>
 
+<p>一个 Web 开发者和写作爱好者12312</p>
 
-{% block content %}
-<div class="about-container">
-    <div class="about-header">
-        <h1> Leo</h1>
-        <p class="subtitle">一个 Web 开发者和写作爱好者</p>
-    </div>
+<h3 id="动态列表">动态列表：</h3>
 
-    <div class="about-section">
-        <h2>动态列表：</h2>
-        <ul class="activity-list">
-            <li>写作《Flask Web 开发实战》第 2 版</li>
-            <li>去西雅图参加微软 MVP 峰会</li>
-            <li>Flask 中文文档翻译</li>
-            <li>写作《Flask 入门教程》第 4 版</li>
-            <li>开发 APIFlask 3.0 版本</li>
-            <li>写作《Python Web API 设计与开发》</li>
-        </ul>
-    </div>
+<ul>
+<li>写作《Flask Web 开发实战》第 2 版</li>
+<li>去西雅图参加微软 MVP 峰会</li>
+<li>Flask 中文文档翻译</li>
+<li>写作《Flask 入门教程》第 4 版</li>
+<li>开发 APIFlask 3.0 版本</li>
+<li>写作《Python Web API 设计与开发》</li>
+</ul>
 
-    <div class="about-section">
-        <h2>网络据述：</h2>
-        <ul class="social-list">
-            <li><a href="https://github.com/yourusername">GitHub</a></li>
-            <li><a href="https://twitter.com/yourusername">Twitter</a></li>
-            <li><a href="https://stackoverflow.com/users/yourid">Stack Overflow</a></li>
-            <li><a href="https://linkedin.com/in/yourusername">LinkedIn</a></li>
-            <li><a href="https://space.bilibili.com/yourid">bilibili</a> / <a href="https://youtube.com/yourusername">YouTube</a></li>
-        </ul>
-    </div>
+<h2 id="网络据述">网络据述：</h2>
 
-    <div class="about-section">
-        <h2>其他站点：</h2>
-        <ul class="other-sites">
-            <li><a href="https://helloflask.com">HelloFlask</a></li>
-            <li><a href="#">代码厨房</a></li>
-        </ul>
-    </div>
+<ul>
+<li><a href="https://github.com/yourusername">GitHub</a></li>
+<li><a href="https://twitter.com/yourusername">Twitter</a></li>
+<li><a href="https://stackoverflow.com/users/yourid">Stack Overflow</a></li>
+<li><a href="https://linkedin.com/in/yourusername">LinkedIn</a></li>
+<li><a href="https://space.bilibili.com/yourid">bilibili</a> / <a href="https://youtube.com/yourusername">YouTube</a></li>
+</ul>
 
-    <div class="about-section">
-        <h2>年度目标 (2/8)：</h2>
-        <div class="goals-progress">
-            <div class="progress-bar">
-                <div class="progress" style="width: 0%"></div>
-            </div>
-            <ul class="activity-list">
-                <li>写作《Flask Web 开发实战》第 3 版</li>
-                <li>去西雅图参加微软 MVP 峰会</li>
-                <li>Flask 中文文档翻译</li>
-                <li>写作《Flask 入门教程》第 4 版</li>
-                <li>开发 APIFlask 3.0 版本</li>
-                <li>写作《Python Web API 设计与开发》</li>
-            </ul>
-        </div>
-    </div>
-</div>
-{% endblock %}
+<h2 id="其他站点">其他站点：</h2>
+
+<ul>
+<li><a href="https://helloflask.com">HelloFlask</a></li>
+<li><a href="#">代码厨房</a></li>
+</ul>
+
+<h2 id="年度目标-28">年度目标 (2/8)：</h2>
+
+<ul>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> 写作《Flask Web 开发实战》第 3 版</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> 去西雅图参加微软 MVP 峰会</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> Flask 中文文档翻译</li>
+<li><input type="checkbox" class="task-list-item-checkbox" checked disabled> 写作《Flask 入门教程》第 4 版</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> 开发 APIFlask 3.0 版本</li>
+<li><input type="checkbox" class="task-list-item-checkbox" disabled> 写作《Python Web API 设计与开发》</li>
+</ul>
+</div>{% endblock %}

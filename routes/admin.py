@@ -3,7 +3,8 @@ from flask_login import login_required
 import os
 from . import admin_bp
 from models import db, Post, Category
-from forms import PostForm
+from forms import PostForm, IndexContentForm
+import markdown2
 
 @admin_bp.route('/')
 @login_required
@@ -73,26 +74,67 @@ def admin_categories():
 @admin_bp.route('/edit-index', methods=['GET', 'POST'])
 @login_required
 def edit_index():
-    index_path = os.path.join(current_app.root_path, 'templates', 'index.html')
+    form = IndexContentForm()
+    index_md_path = os.path.join(current_app.root_path, 'templates', 'index.md')
+    index_html_path = os.path.join(current_app.root_path, 'templates', 'index.html')
     
-    if request.method == 'POST':
-        content = request.form.get('content')
+    if request.method == 'POST' and form.validate_on_submit():
+        content = form.content.data
         try:
-            with open(index_path, 'w', encoding='utf-8') as f:
+            # 保存Markdown内容
+            with open(index_md_path, 'w', encoding='utf-8') as f:
                 f.write(content)
+                
+            # 转换为HTML并保存，启用多种extras
+            html_content = markdown2.markdown(
+                content,
+                extras=[
+                    "fenced-code-blocks",
+                    "tables",
+                    "header-ids",
+                    "task_list",
+                    "footnotes",
+                    "cuddled-lists",
+                    "code-friendly",
+                    "smarty-pants"
+                ]
+            )
+            
+            # 将HTML内容嵌入到模板中，注意添加了markdown-content类
+            template_content = f'{{% extends "base.html" %}}{{% block content %}}<div class="markdown-content">{html_content}</div>{{% endblock %}}'
+            
+            with open(index_html_path, 'w', encoding='utf-8') as f:
+                f.write(template_content)
+                
             flash('首页内容已更新')
             return redirect(url_for('admin.dashboard'))
         except Exception as e:
             flash(f'更新失败: {str(e)}')
     
+    # 读取现有的Markdown内容
     try:
-        with open(index_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        if os.path.exists(index_md_path):
+            with open(index_md_path, 'r', encoding='utf-8') as f:
+                form.content.data = f.read()
+        else:
+            # 如果Markdown文件不存在，尝试从HTML提取内容
+            with open(index_html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+                # 这里简单处理，实际可能需要更复杂的HTML到Markdown转换
+                # 提取content块中的内容
+                start_tag = '{%% block content %%}'
+                end_tag = '{%% endblock %%}'
+                start_pos = html_content.find(start_tag) + len(start_tag)
+                end_pos = html_content.find(end_tag)
+                if start_pos > 0 and end_pos > start_pos:
+                    form.content.data = html_content[start_pos:end_pos].strip()
+                else:
+                    form.content.data = '# 欢迎来到我的博客\n\n这是首页内容，请使用Markdown编辑。'
     except Exception as e:
-        content = ''
+        form.content.data = '# 欢迎来到我的博客\n\n这是首页内容，请使用Markdown编辑。'
         flash(f'读取文件失败: {str(e)}')
     
-    return render_template('admin/edit_index.html', content=content)
+    return render_template('admin/edit_index.html', form=form)
 
 @admin_bp.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required

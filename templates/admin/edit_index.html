@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="edit-index-container">
-    <h1>编辑首页内容</h1>
+    <h1>编辑首页内容 (Markdown)</h1>
     
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -17,24 +17,68 @@
     {% endwith %}
     
     <form method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="content">HTML 内容</label>
-            <textarea id="content" name="content" class="form-control code-editor" rows="30">{{ content }}</textarea>
+            {{ form.content.label }}
+            {{ form.content(class="form-control markdown-editor", rows=20) }}
+        </div>
+        
+        <div class="markdown-tips">
+            <p>Markdown 语法提示:</p>
+            <ul>
+                <li># 一级标题</li>
+                <li>## 二级标题</li>
+                <li>**粗体**</li>
+                <li>*斜体*</li>
+                <li>[链接文本](URL)</li>
+                <li>![图片描述](图片URL)</li>
+                <li>- 无序列表项</li>
+                <li>1. 有序列表项</li>
+                <li>```代码块```</li>
+            </ul>
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">保存更改</button>
+            {{ form.submit(class="btn btn-primary") }}
             <a href="{{ url_for('admin.dashboard') }}" class="btn">取消</a>
         </div>
     </form>
 </div>
+{% endblock %}
 
-<style>
-.code-editor {
-    font-family: monospace;
-    white-space: pre;
-    tab-size: 4;
-}
-</style>
+{% block styles %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+    <style>
+    .markdown-tips {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    .markdown-tips ul {
+        margin-bottom: 0;
+    }
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var textarea = document.querySelector(".markdown-editor");
+            var simplemde = new SimpleMDE({
+                element: textarea,
+                spellChecker: false,
+                autosave: {
+                    enabled: true,
+                    unique_id: "index-content"
+                }
+            });
+
+            document.querySelector('form').addEventListener("submit", function (e) {
+                textarea.value = simplemde.value(); // 同步内容
+                return true; // 不阻止提交
+            });
+        });
+    </script>
 {% endblock %}

@@ -435,14 +435,104 @@ nav a:hover {
     margin-bottom: 10px;
 }
 
+/* 页脚样式 */
 .footer {
+    margin-top: 50px;
     padding-top: 20px;
-    margin-top: 30px;
     border-top: 1px solid #eee;
 }
 
 .footer-content {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0 10px;
+}
+
+.footer-left {
+    text-align: left;
+}
+
+.copyright {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+    font-size: 14px;
+}
+
+.copyright-symbol {
+    font-size: 16px;
+    margin-right: 2px;
+}
+
+.copyright-year {
+    font-weight: 500;
+}
+
+.footer-motto {
+    margin-top: 5px;
+    color: #888;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.admin-link {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 6px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 3px;
+    color: #666;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    vertical-align: middle;
+}
+
+.admin-link:hover {
+    background-color: #e9ecef;
+    text-decoration: none;
+}
+
+.runtime-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.runtime-icon {
+    font-size: 16px;
+    color: #666;
+}
+
+.runtime-text {
+    color: #666;
+    font-size: 13px;
+    font-family: Monaco, Consolas, monospace;
+}
+
+.footer-right {
+    text-align: right;
+}
+
+.footer-left p, .footer-right p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.admin-link {
+    color: #0366d6;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.admin-link:hover {
+    text-decoration: underline;
 }
 
 .copyright-text {
@@ -455,7 +545,7 @@ nav a:hover {
 .copyright-text p {
     margin: 0;
     color: #666;
-    font-size: 0.9em;  /* 设置与admin-link相同的字号 */
+    font-size: 0.9em;  
 }
 
 .admin-link {

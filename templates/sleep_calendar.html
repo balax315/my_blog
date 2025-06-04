@@ -144,7 +144,7 @@
 
 {% block content %}
     <div class="articles-container">
-        <h1>睡眠日历 (2025)</h1>
+        <h1>睡眠日历 ({{ year }})</h1>
 
         <div class="quality-legend">
             <div class="legend-item">
@@ -216,6 +216,7 @@
 
 {% block scripts %}
     <script>
+        const currentYear = parseInt('{{ year }}');
         // 月份名称
         const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
         // 星期名称
@@ -251,7 +252,7 @@
 
         // 获取睡眠记录数据
         function fetchSleepRecords() {
-            fetch('/api/sleep-records?year=2025', {
+            fetch(`/api/sleep-records?year=${currentYear}`, {
                 headers: {
                     'X-CSRFToken': csrfToken
                 }
@@ -304,7 +305,7 @@
 
         // 更新日历
         function updateCalendar() {
-            const year = 2025;
+            const year = currentYear;
 
             for (let month = 0; month < 12; month++) {
                 const daysEl = document.getElementById(`days-${month}`);

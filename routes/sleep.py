@@ -8,12 +8,13 @@ from forms import SleepRecordForm
 
 @sleep_bp.route('/sleep-calendar')
 def sleep_calendar():
-    return render_template('sleep_calendar.html', year=2025)
+    current_year = datetime.datetime.now().year
+    return render_template('sleep_calendar.html', year=current_year)
 
 @sleep_bp.route('/api/sleep-records')
 @login_required
 def get_sleep_records():
-    year = request.args.get('year', 2025, type=int)
+    year = request.args.get('year', datetime.datetime.now().year, type=int)
     records = SleepRecord.query.filter(
         SleepRecord.user_id == current_user.id,
         extract('year', SleepRecord.date) == year

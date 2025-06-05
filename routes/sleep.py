@@ -121,3 +121,95 @@ def delete_sleep_record(record_id):
         flash(f'删除失败: {str(e)}')
     
     return redirect(url_for('sleep.sleep_calendar'))
+
+@sleep_bp.route('/sleep-chart')
+def sleep_chart():
+    return render_template('sleep_chart.html')
+
+@sleep_bp.route('/api/sleep-chart-data')
+@login_required
+def get_sleep_chart_data():
+    # 获取日期范围参数
+    start_date_str = request.args.get('start_date', None)
+    end_date_str = request.args.get('end_date', None)
+    
+    # 如果没有提供日期范围，默认使用最近7天
+    if not start_date_str or not end_date_str:
+        end_date = datetime.datetime.now().date()
+        start_date = end_date - datetime.timedelta(days=6)
+    else:
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    
+    # 查询指定日期范围内的睡眠记录
+    records = SleepRecord.query.filter(
+        SleepRecord.user_id == current_user.id,
+        SleepRecord.date >= start_date,
+        SleepRecord.date <= end_date
+    ).order_by(SleepRecord.date).all()
+    
+    # 格式化记录数据
+    formatted_records = []
+    total_sleep_minutes = 0
+    total_wake_minutes = 0
+    total_duration = 0
+    
+    for record in records:
+        # 计算入睡时间（分钟数）
+        sleep_hour = record.sleep_time.hour
+        sleep_minute = record.sleep_time.minute
+        sleep_time_str = f"{sleep_hour:02d}:{sleep_minute:02d}"
+        
+        # 计算起床时间（分钟数）
+        wake_hour = record.wake_time.hour
+        wake_minute = record.wake_time.minute
+        wake_time_str = f"{wake_hour:02d}:{wake_minute:02d}"
+        
+        # 累加时间用于计算平均值
+        sleep_minutes = sleep_hour * 60 + sleep_minute
+        wake_minutes = wake_hour * 60 + wake_minute
+        
+        # 处理跨天情况
+        if record.wake_time.date() > record.sleep_time.date():
+            wake_minutes += 24 * 60
+        
+        total_sleep_minutes += sleep_minutes
+        total_wake_minutes += wake_minutes
+        total_duration += record.duration
+        
+        formatted_records.append({
+            'id': record.id,
+            'date': record.date.strftime('%Y-%m-%d'),
+            'sleep_time': sleep_time_str,
+            'wake_time': wake_time_str,
+            'duration': record.duration,
+            'quality': record.quality,
+            'notes': record.notes
+        })
+    
+    # 计算平均值
+    stats = {}
+    if records:
+        # 计算平均入睡时间
+        avg_sleep_minutes = total_sleep_minutes / len(records)
+        avg_sleep_hour = int(avg_sleep_minutes // 60) % 24
+        avg_sleep_minute = int(avg_sleep_minutes % 60)
+        stats['avg_sleep_time'] = f"{avg_sleep_hour:02d}:{avg_sleep_minute:02d}"
+        
+        # 计算平均起床时间
+        avg_wake_minutes = total_wake_minutes / len(records)
+        avg_wake_hour = int(avg_wake_minutes // 60) % 24
+        avg_wake_minute = int(avg_wake_minutes % 60)
+        stats['avg_wake_time'] = f"{avg_wake_hour:02d}:{avg_wake_minute:02d}"
+        
+        # 计算平均睡眠时长
+        stats['avg_duration'] = total_duration / len(records)
+    
+    return jsonify({
+        'records': formatted_records,
+        'stats': stats,
+        'date_range': {
+            'start_date': start_date.strftime('%Y-%m-%d'),
+            'end_date': end_date.strftime('%Y-%m-%d')
+        }
+    })

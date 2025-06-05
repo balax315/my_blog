@@ -146,6 +146,7 @@
     <div class="articles-container">
         <h1>睡眠日历 ({{ year }})</h1>
 
+        <!-- 在睡眠日历标题下方添加 -->
         <div class="quality-legend">
             <div class="legend-item">
                 <div class="legend-color" style="background-color: #4CAF50;"></div>
@@ -159,6 +160,10 @@
                 <div class="legend-color" style="background-color: #F44336;"></div>
                 <span>差</span>
             </div>
+            <!-- 添加图表链接 -->
+            <div style="margin-left: auto;">
+                <a href="{{ url_for('sleep.sleep_chart') }}" class="btn">查看睡眠时间分析图表</a>
+            </div>  
         </div>
 
         <div class="calendar-container">

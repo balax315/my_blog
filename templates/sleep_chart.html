@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+
+{% block title %}睡眠时间分析 - 个人博客{% endblock %}
+
+{% block styles %}
+    <style>
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .chart-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #fff;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0366d6;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        button {
+            background-color: #0366d6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0255b8;
+        }
+
+        #sleepChart {
+            width: 100%;
+            height: 400px;
+            max-height: 70vh; /* 限制最大高度为视口高度的70% */
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #fff;
+            max-width: 100%;
+            overflow-x: auto; /* 添加水平滚动条，确保在小屏幕上也能查看完整图表 */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="articles-container">
+        <h1>睡眠时间分析</h1>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-controls">
+                    <select id="timeRange">
+                        <option value="week">本周</option>
+                        <option value="month">本月</option>
+                        <option value="3months">近三个月</option>
+                        <option value="year">今年</option>
+                        <option value="custom">自定义</option>
+                    </select>
+
+                    <div id="customDateRange" style="display: none;">
+                        <input type="date" id="startDate">
+                        <span>至</span>
+                        <input type="date" id="endDate">
+                        <button id="applyCustomRange">应用</button>
+                    </div>
+
+                    <button id="prevPeriod">&lt; 上一个</button>
+                    <button id="nextPeriod">下一个 &gt;</button>
+                    <button id="today">今天</button>
+                </div>
+            </div>
+
+            <canvas id="sleepChart"></canvas>
+
+            <div class="chart-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="avgSleepTime">--:--</div>
+                    <div class="stat-label">平均入睡时间</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgWakeTime">--:--</div>
+                    <div class="stat-label">平均起床时间</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgDuration">-.-</div>
+                    <div class="stat-label">平均睡眠时长 (小时)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <script>
+        // 全局变量
+        let sleepChart = null;
+        let currentStartDate = new Date();
+        let currentEndDate = new Date();
+        let sleepRecords = [];
+
+        // 初始化日期范围（默认为本周）
+        function initDateRange() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 周日是0，周六是6
+
+            // 计算本周的开始日期（周日）
+            currentStartDate = new Date(today);
+            currentStartDate.setDate(today.getDate() - dayOfWeek);
+
+            // 计算本周的结束日期（周六）
+            currentEndDate = new Date(today);
+            currentEndDate.setDate(today.getDate() + (6 - dayOfWeek));
+
+            // 更新日期选择器
+            if (document.getElementById('startDate')) {
+                document.getElementById('startDate').valueAsDate = currentStartDate;
+                document.getElementById('endDate').valueAsDate = currentEndDate;
+            }
+        }
+
+        // 获取CSRF令牌
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        // 获取睡眠记录数据
+        function fetchSleepData() {
+            const startDateStr = formatDate(currentStartDate);
+            const endDateStr = formatDate(currentEndDate);
+
+            fetch(`/api/sleep-chart-data?start_date=${startDateStr}&end_date=${endDateStr}`, {
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                sleepRecords = data.records;
+                updateChart();
+                updateStats(data.stats);
+            })
+            .catch(error => console.error('获取睡眠数据失败:', error));
+        }
+
+        // 更新图表
+        function updateChart() {
+            const ctx = document.getElementById('sleepChart').getContext('2d');
+
+            // 准备数据
+            const datasets = [];
+
+            // 睡眠时间数据集
+            const sleepData = sleepRecords.map(record => ({
+                x: new Date(record.date),
+                y1: parseTimeToMinutes(record.sleep_time),
+                y2: parseTimeToMinutes(record.wake_time),
+                quality: record.quality
+            }));
+
+            // 如果已有图表，销毁它
+            if (sleepChart) {
+                sleepChart.destroy();
+            }
+
+            // 创建新图表
+            sleepChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    datasets: [{
+                        label: '睡眠时间',
+                        data: sleepData,
+                        // 设置默认数据集为完全透明，只使用我们的自定义绘制
+                        backgroundColor: 'rgba(0, 0, 0, 0)',
+                        borderColor: 'rgba(0, 0, 0, 0)',
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    aspectRatio: 2, // 设置宽高比为2:1
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 10,
+                            bottom: 10,
+                            left: 10
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MM-dd'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: '日期'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            min: 21 * 60, // 21:00 (21小时 * 60分钟)
+                            max: 36 * 60, // 第二天12:00 (36小时 * 60分钟)
+                            reverse: true, // 反转坐标轴，使较小的值（较早的时间）在上方
+                            title: {
+                                display: true,
+                                text: '时间'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    // 将分钟数转换为时间格式
+                                    const hours = Math.floor(value / 60);
+                                    const minutes = value % 60;
+                                    const displayHours = hours >= 24 ? hours - 24 : hours;
+                                    const dayIndicator = hours >= 24 ? '次日 ' : '';
+                                    return `${dayIndicator}${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                                },
+                                stepSize: 60, // 每小时一个刻度
+                                autoSkip: false, // 移除自动跳过
+                                maxTicksLimit: undefined // 移除最大刻度限制
+                            }
+                        }
+                    },
+                    parsing: {
+                        yAxisKey: 'y1', // 默认使用y1作为起点（入睡时间）
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const data = context.raw;
+                                    const sleepTime = minutesToTimeString(data.y1);
+                                    const wakeTime = minutesToTimeString(data.y2);
+                                    const duration = ((data.y2 - data.y1) / 60).toFixed(1);
+
+                                    return [
+                                        `入睡: ${sleepTime}`,
+                                        `起床: ${wakeTime}`,
+                                        `时长: ${duration} 小时`,
+                                        `质量: ${getQualityText(data.quality)}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'sleepTimeRectangles',
+                    beforeDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        const xAxis = chart.scales.x;
+                        const yAxis = chart.scales.y;
+                        const dataset = chart.data.datasets[0];
+
+                        ctx.save();
+
+                        // 计算适当的矩形宽度 - 根据时间范围自动调整
+                        const dateRange = (currentEndDate - currentStartDate) / (1000 * 60 * 60 * 24);
+                        // 基础宽度为30像素（一周视图），随着日期范围增加而减小
+                        let barWidth = 30;
+                        if (dateRange > 7) {
+                            // 随着日期范围增加，宽度逐渐减小，但设置最小宽度为8像素
+                            barWidth = Math.max(8, 30 * (7 / dateRange));
+                        }
+
+                        // 绘制每个睡眠时间的矩形
+                        dataset.data.forEach((dataPoint, index) => {
+                            // 获取日期对应的x坐标位置 - 直接使用日期点的位置
+                            const x = xAxis.getPixelForValue(new Date(sleepRecords[index].date));
+                            const y1 = yAxis.getPixelForValue(dataPoint.y1); // 入睡时间
+                            const y2 = yAxis.getPixelForValue(dataPoint.y2); // 起床时间
+
+                            const barHeight = y2 - y1;
+
+                            // 设置矩形样式
+                            ctx.fillStyle = getQualityColor(dataPoint.quality, 0.7);
+                            ctx.strokeStyle = getQualityColor(dataPoint.quality, 1);
+                            ctx.lineWidth = 1;
+
+                            // 绘制矩形 - 确保矩形中心与日期点对齐
+                            const barX = x;
+                            ctx.fillRect(barX, y1, barWidth, barHeight);
+                            ctx.strokeRect(barX, y1, barWidth, barHeight);
+
+                            // 可选：绘制一条垂直线，确认中心对齐
+                            // ctx.beginPath();
+                            // ctx.moveTo(x, y1 - 5);
+                            // ctx.lineTo(x, y2 + 5);
+                            // ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                            // ctx.stroke();
+                        });
+
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+
+        // 更新统计信息
+        function updateStats(stats) {
+            document.getElementById('avgSleepTime').textContent = stats.avg_sleep_time || '--:--';
+            document.getElementById('avgWakeTime').textContent = stats.avg_wake_time || '--:--';
+            document.getElementById('avgDuration').textContent = stats.avg_duration ? stats.avg_duration.toFixed(1) : '-.-';
+        }
+
+        // 根据睡眠质量获取颜色
+        function getQualityColor(quality, alpha = 1) {
+            switch (quality) {
+                case 'good':
+                    return `rgba(76, 175, 80, ${alpha})`; // 绿色
+                case 'normal':
+                    return `rgba(255, 193, 7, ${alpha})`; // 黄色
+                case 'poor':
+                    return `rgba(244, 67, 54, ${alpha})`; // 红色
+                default:
+                    return `rgba(158, 158, 158, ${alpha})`; // 灰色
+            }
+        }
+
+        // 获取质量文本
+        function getQualityText(quality) {
+            switch (quality) {
+                case 'good': return '优';
+                case 'normal': return '良';
+                case 'poor': return '差';
+                default: return '';
+            }
+        }
+
+        // 将时间字符串解析为分钟数（相对于当天0点）
+        function parseTimeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            // 如果是晚上9点以后，直接计算分钟数
+            if (hours >= 21) {
+                return hours * 60 + minutes;
+            }
+            // 如果是早上，加上24小时
+            else {
+                return (hours + 24) * 60 + minutes;
+            }
+        }
+
+        // 将分钟数转换为时间字符串
+        function minutesToTimeString(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            const displayHours = hours >= 24 ? hours - 24 : hours;
+            const dayIndicator = hours >= 24 ? '次日 ' : '';
+            return `${dayIndicator}${String(displayHours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+
+        // 格式化日期为YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 更新日期范围
+        function updateDateRange(rangeType) {
+            const today = new Date();
+
+            switch (rangeType) {
+                case 'week':
+                    const dayOfWeek = today.getDay(); // 周日是0，周六是6
+                    currentStartDate = new Date(today);
+                    currentStartDate.setDate(today.getDate() - dayOfWeek);
+                    currentEndDate = new Date(today);
+                    currentEndDate.setDate(today.getDate() + (6 - dayOfWeek));
+                    break;
+
+                case 'month':
+                    currentStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    currentEndDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+
+                case '3months':
+                    currentStartDate = new Date(today);
+                    currentStartDate.setMonth(today.getMonth() - 2);
+                    currentStartDate.setDate(1);
+                    currentEndDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+
+                case 'year':
+                    currentStartDate = new Date(today.getFullYear(), 0, 1);
+                    currentEndDate = new Date(today.getFullYear(), 11, 31);
+                    break;
+
+                case 'custom':
+                    // 自定义日期范围在应用按钮点击时处理
+                    return;
+            }
+
+            // 更新自定义日期选择器的值
+            if (document.getElementById('startDate')) {
+                document.getElementById('startDate').valueAsDate = currentStartDate;
+                document.getElementById('endDate').valueAsDate = currentEndDate;
+            }
+
+            // 获取新日期范围的数据
+            fetchSleepData();
+        }
+
+        // 移动到上一个时间段
+        function moveToPrevPeriod() {
+            const rangeType = document.getElementById('timeRange').value;
+            const rangeInDays = (currentEndDate - currentStartDate) / (1000 * 60 * 60 * 24);
+
+            currentEndDate = new Date(currentStartDate);
+            currentEndDate.setDate(currentEndDate.getDate() - 1);
+
+            currentStartDate = new Date(currentEndDate);
+            currentStartDate.setDate(currentStartDate.getDate() - rangeInDays);
+
+            // 更新自定义日期选择器的值
+            if (document.getElementById('startDate')) {
+                document.getElementById('startDate').valueAsDate = currentStartDate;
+                document.getElementById('endDate').valueAsDate = currentEndDate;
+            }
+
+            fetchSleepData();
+        }
+
+        // 移动到下一个时间段
+        function moveToNextPeriod() {
+            const rangeType = document.getElementById('timeRange').value;
+            const rangeInDays = (currentEndDate - currentStartDate) / (1000 * 60 * 60 * 24);
+
+            currentStartDate = new Date(currentEndDate);
+            currentStartDate.setDate(currentStartDate.getDate() + 1);
+
+            currentEndDate = new Date(currentStartDate);
+            currentEndDate.setDate(currentEndDate.getDate() + rangeInDays);
+
+            // 如果超过今天，调整为今天
+            const today = new Date();
+            if (currentEndDate > today) {
+                currentEndDate = new Date(today);
+                currentStartDate = new Date(currentEndDate);
+                currentStartDate.setDate(currentStartDate.getDate() - rangeInDays);
+            }
+
+            // 更新自定义日期选择器的值
+            if (document.getElementById('startDate')) {
+                document.getElementById('startDate').valueAsDate = currentStartDate;
+                document.getElementById('endDate').valueAsDate = currentEndDate;
+            }
+
+            fetchSleepData();
+        }
+
+        // 返回今天
+        function moveToToday() {
+            const rangeType = document.getElementById('timeRange').value;
+            updateDateRange(rangeType);
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化日期范围
+            initDateRange();
+
+            // 获取睡眠数据
+            fetchSleepData();
+
+            // 时间范围选择事件
+            document.getElementById('timeRange').addEventListener('change', function() {
+                const rangeType = this.value;
+
+                // 显示或隐藏自定义日期范围选择器
+                if (rangeType === 'custom') {
+                    document.getElementById('customDateRange').style.display = 'inline-block';
+                } else {
+                    document.getElementById('customDateRange').style.display = 'none';
+                    updateDateRange(rangeType);
+                }
+            });
+
+            // 应用自定义日期范围
+            document.getElementById('applyCustomRange').addEventListener('click', function() {
+                const startDate = document.getElementById('startDate').valueAsDate;
+                const endDate = document.getElementById('endDate').valueAsDate;
+
+                if (startDate && endDate) {
+                    currentStartDate = startDate;
+                    currentEndDate = endDate;
+                    fetchSleepData();
+                }
+            });
+
+            // 上一个时间段
+            document.getElementById('prevPeriod').addEventListener('click', moveToPrevPeriod);
+
+            // 下一个时间段
+            document.getElementById('nextPeriod').addEventListener('click', moveToNextPeriod);
+
+            // 今天
+            document.getElementById('today').addEventListener('click', moveToToday);
+        });
+    </script>
+{% endblock %}

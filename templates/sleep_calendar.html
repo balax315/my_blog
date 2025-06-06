@@ -409,12 +409,9 @@
             document.getElementById('recordId').value = selectedRecord.id;
             document.getElementById('date').value = selectedRecord.date;
 
-            // 格式化时间
-            const sleepDateTime = `${selectedRecord.date}T${selectedRecord.sleep_time}`;
-            const wakeDateTime = `${selectedRecord.date}T${selectedRecord.wake_time}`;
 
-            document.getElementById('sleepTime').value = sleepDateTime;
-            document.getElementById('wakeTime').value = wakeDateTime;
+            document.getElementById('sleepTime').value = selectedRecord.sleep_time;
+            document.getElementById('wakeTime').value = selectedRecord.wake_time;
             document.getElementById('quality').value = selectedRecord.quality;
             document.getElementById('notes').value = selectedRecord.notes || '';
 
@@ -430,9 +427,7 @@
             const quality = document.getElementById('quality').value;
             const notes = document.getElementById('notes').value;
         
-            // 分离日期和时间
-            const sleepTime = sleepTimeInput.split('T')[1];
-            const wakeTime = wakeTimeInput.split('T')[1];
+
         
             const url = recordId ?
                 `/admin/sleep-record/${recordId}/edit` :
@@ -447,8 +442,8 @@
         
             // 添加表单字段
             formData.append('date', date);
-            formData.append('sleep_time', sleepTime);
-            formData.append('wake_time', wakeTime);
+            formData.append('sleep_time', sleepTimeInput); 
+            formData.append('wake_time', wakeTimeInput);
             formData.append('quality', quality);
             formData.append('notes', notes);
             formData.append('submit', '保存'); // 添加submit字段

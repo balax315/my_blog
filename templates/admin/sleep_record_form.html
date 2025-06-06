@@ -4,7 +4,7 @@
 
 {% block styles %}
 <style>
-    .time-select {
+    .datetime-select {
         width: 100%;
         padding: 8px;
         border: 1px solid #ddd;
@@ -31,7 +31,7 @@
         
         <div class="form-group">
             {{ form.sleep_time.label }}
-            {{ form.sleep_time(class="time-select") }}
+            {{ form.sleep_time(class="datetime-select", type="datetime-local") }}
             {% if form.sleep_time.errors %}
                 <div class="error">{{ form.sleep_time.errors[0] }}</div>
             {% endif %}
@@ -39,7 +39,7 @@
         
         <div class="form-group">
             {{ form.wake_time.label }}
-            {{ form.wake_time(class="time-select") }}
+            {{ form.wake_time(class="datetime-select", type="datetime-local") }}
             {% if form.wake_time.errors %}
                 <div class="error">{{ form.wake_time.errors[0] }}</div>
             {% endif %}

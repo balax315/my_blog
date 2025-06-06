@@ -26,8 +26,8 @@ def get_sleep_records():
     data = [{
         'id': record.id,
         'date': record.date.strftime('%Y-%m-%d'),
-        'sleep_time': record.sleep_time.strftime('%H:%M'),
-        'wake_time': record.wake_time.strftime('%H:%M'),
+        'sleep_time': record.sleep_time.strftime('%Y-%m-%dT%H:%M'),
+        'wake_time': record.wake_time.strftime('%Y-%m-%dT%H:%M'),
         'duration': record.duration,
         'quality': record.quality,
         'notes': record.notes
@@ -43,19 +43,12 @@ def get_sleep_records():
 def new_sleep_record():
     form = SleepRecordForm()
     if form.validate_on_submit():
-        # 将日期和时间合并为datetime对象
-        sleep_datetime = datetime.datetime.combine(form.date.data, form.sleep_time.data)
-        wake_datetime = datetime.datetime.combine(form.date.data, form.wake_time.data)
-        
-        # 如果起床时间早于入睡时间，说明跨天了，需要加一天
-        if wake_datetime < sleep_datetime:
-            wake_datetime = wake_datetime + datetime.timedelta(days=1)
-            
+        # 直接使用表单提交的日期时间值
         record = SleepRecord(
             user_id=current_user.id,
-            date=form.date.data,
-            sleep_time=sleep_datetime,
-            wake_time=wake_datetime,
+            date=form.date.data,  # 记录日期仍然保留
+            sleep_time=form.sleep_time.data,  # 直接使用完整的日期时间
+            wake_time=form.wake_time.data,  # 直接使用完整的日期时间
             quality=form.quality.data,
             notes=form.notes.data
         )
@@ -78,19 +71,22 @@ def edit_sleep_record(record_id):
         flash('无权编辑此记录')
         return redirect(url_for('sleep.sleep_calendar'))
     
-    form = SleepRecordForm(obj=record)
+    # 创建表单时不使用obj=record，而是手动设置初始值
+    form = SleepRecordForm()
+    
+    # 如果是GET请求，设置表单的初始值
+    if request.method == 'GET':
+        form.date.data = record.date
+        form.sleep_time.data = record.sleep_time
+        form.wake_time.data = record.wake_time
+        form.quality.data = record.quality
+        form.notes.data = record.notes
+    
     if form.validate_on_submit():
-        # 将日期和时间合并为datetime对象
-        sleep_datetime = datetime.datetime.combine(form.date.data, form.sleep_time.data)
-        wake_datetime = datetime.datetime.combine(form.date.data, form.wake_time.data)
-        
-        # 如果起床时间早于入睡时间，说明跨天了，需要加一天
-        if wake_datetime < sleep_datetime:
-            wake_datetime = wake_datetime + datetime.timedelta(days=1)
-            
+        # 直接使用表单提交的日期时间值
         record.date = form.date.data
-        record.sleep_time = sleep_datetime
-        record.wake_time = wake_datetime
+        record.sleep_time = form.sleep_time.data
+        record.wake_time = form.wake_time.data
         record.quality = form.quality.data
         record.notes = form.notes.data
         
@@ -155,23 +151,15 @@ def get_sleep_chart_data():
     total_duration = 0
     
     for record in records:
-        # 计算入睡时间（分钟数）
-        sleep_hour = record.sleep_time.hour
-        sleep_minute = record.sleep_time.minute
-        sleep_time_str = f"{sleep_hour:02d}:{sleep_minute:02d}"
-        
-        # 计算起床时间（分钟数）
-        wake_hour = record.wake_time.hour
-        wake_minute = record.wake_time.minute
-        wake_time_str = f"{wake_hour:02d}:{wake_minute:02d}"
+        # 使用完整的日期时间
+        sleep_time_str = record.sleep_time.strftime('%H:%M')
+        wake_time_str = record.wake_time.strftime('%H:%M')
         
         # 累加时间用于计算平均值
-        sleep_minutes = sleep_hour * 60 + sleep_minute
-        wake_minutes = wake_hour * 60 + wake_minute
+        sleep_minutes = record.sleep_time.hour * 60 + record.sleep_time.minute
+        wake_minutes = record.wake_time.hour * 60 + record.wake_time.minute
         
-        # 处理跨天情况
-        if record.wake_time.date() > record.sleep_time.date():
-            wake_minutes += 24 * 60
+        # 处理跨天情况 - 不再需要特殊处理，因为日期已经包含在datetime中
         
         total_sleep_minutes += sleep_minutes
         total_wake_minutes += wake_minutes
@@ -182,6 +170,8 @@ def get_sleep_chart_data():
             'date': record.date.strftime('%Y-%m-%d'),
             'sleep_time': sleep_time_str,
             'wake_time': wake_time_str,
+            'sleep_datetime': record.sleep_time.strftime('%Y-%m-%d %H:%M'),
+            'wake_datetime': record.wake_time.strftime('%Y-%m-%d %H:%M'),
             'duration': record.duration,
             'quality': record.quality,
             'notes': record.notes
